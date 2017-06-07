@@ -147,7 +147,7 @@ class Model():
                 if n==1:
                     top_interests = np.argsort(-p)[:20]
                     for idx in top_interests:
-                        print words[idx], p[idx]
+                        print tag_id_name_dict.get(words[idx], words[idx]), p[idx]
                 pred = words[sample]
                 ret += ' ' + tag_id_name_dict.get(pred, pred)
                 word = pred
