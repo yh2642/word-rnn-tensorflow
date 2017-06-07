@@ -144,7 +144,10 @@ class Model():
                         sample = np.argmax(p)
                 else: # sampling_type == 1 default:
                     sample = weighted_pick(p)
-
+                if n==1:
+                    top_interests = np.argsort(-p)[:20]
+                    for idx in top_interests:
+                        print words[idx], p[idx]
                 pred = words[sample]
                 ret += ' ' + tag_id_name_dict.get(pred, pred)
                 word = pred
