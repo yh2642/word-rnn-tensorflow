@@ -83,7 +83,7 @@ class Model():
         optimizer = tf.train.AdamOptimizer(self.lr)
         self.train_op = optimizer.apply_gradients(zip(grads, tvars))
 
-    def sample(self, sess, words, vocab, num=200, prime='first all', sampling_type=1, pick=0, width=4, tag_id_name_dict=dict()):
+    def sample(self, sess, words, vocab, num=200, prime='first all', sampling_type=1, pick=0, width=4, tag_id_name_dict=dict(), tag_name_id_dict=dict()):
         def weighted_pick(weights):
             t = np.cumsum(weights)
             s = np.sum(weights)
@@ -128,6 +128,7 @@ class Model():
 
             ret = prime
             word = prime.split()[-1]
+            word = tag_name_id_dict.get(word, word)
             for n in range(num):
                 x = np.zeros((1, 1))
                 x[0, 0] = vocab.get(word, 0)

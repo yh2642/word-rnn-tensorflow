@@ -30,9 +30,11 @@ def main():
 
 def sample(args):
     tag_id_name_dict = dict()
+    tag_name_id_dict = dict()
     for line in open('/home/icarus/yhu/category_name_dict/data'):
         cat_id, name = line.split('|')[:2]
         tag_id_name_dict['category.' + cat_id] = name
+        tag_name_id_dict[name] = 'category.' + cat_id
     with open(os.path.join(args.save_dir, 'config.pkl'), 'rb') as f:
         saved_args = cPickle.load(f)
     with open(os.path.join(args.save_dir, 'words_vocab.pkl'), 'rb') as f:
