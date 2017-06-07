@@ -135,10 +135,11 @@ def train(args):
                     checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
                     saver.save(sess, checkpoint_path, global_step = e * data_loader.num_batches + b)
                     print("model saved to {}".format(checkpoint_path))
-                    for user, serials in sample_user.items():
-                        print(user)
-                        args2 = get_sample_args()
-                        print (model.sample(sess, data_loader.words, data_loader.vocab, 5, serials, args2.sample, args2.pick, args2.width, tag_id_name_dict))
+                    if (e * data_loader.num_batches + b) > 0:
+                        for user, serials in sample_user.items():
+                            print(user)
+                            args2 = get_sample_args()
+                            print (model.sample(sess, data_loader.words, data_loader.vocab, 5, serials, args2.sample, args2.pick, args2.width, tag_id_name_dict))
         train_writer.close()
 
 if __name__ == '__main__':
