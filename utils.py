@@ -20,7 +20,7 @@ class TextLoader():
         # Let's not read voca and data from file. We many change them.
         if True or not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
             print("reading text file")
-            self.preprocess(input_file, vocab_file, tensor_file, encoding)
+            self.preprocess(input_file, vocab_file, tensor_file, encoding, seq_length)
         else:
             print("loading preprocessed files")
             self.load_preprocessed(vocab_file, tensor_file)
@@ -61,14 +61,18 @@ class TextLoader():
         vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
         return [vocabulary, vocabulary_inv]
 
-    def preprocess(self, input_file, vocab_file, tensor_file, encoding):
-        with codecs.open(input_file, "r", encoding=encoding) as f:
-            data = f.read()
-
-        # Optional text cleaning or make them lower case, etc.
-        #data = self.clean_str(data)
-        x_text = data.split()
-
+    def preprocess(self, data_dir, vocab_file, tensor_file, encoding, seq_length):
+        import gzip
+        x_text = []
+        for filename in os.listdir(data_dir):
+            if filename.endswith(".gz"):
+                for line in gzip.open(data_dir + filename):
+                    item_serial = line.strip().split(' ')
+                    if len(item_serial) < seq_length:
+                        continue
+                    mul_cut = len(item_serial) / seq_length
+                    item_serial = item_serial[:mul_cut*seq_length]
+                    x_text.extend(item_serial)
         self.vocab, self.words = self.build_vocab(x_text)
         self.vocab_size = len(self.words)
 
@@ -80,6 +84,28 @@ class TextLoader():
         self.tensor = np.array(list(map(self.vocab.get, x_text)))
         # Save the data to data.npy
         np.save(tensor_file, self.tensor)
+
+
+    #
+    # def preprocess(self, input_file, vocab_file, tensor_file, encoding):
+    #     with codecs.open(input_file, "r", encoding=encoding) as f:
+    #         data = f.read()
+    #
+    #     # Optional text cleaning or make them lower case, etc.
+    #     #data = self.clean_str(data)
+    #     x_text = data.split()
+    #
+    #     self.vocab, self.words = self.build_vocab(x_text)
+    #     self.vocab_size = len(self.words)
+    #
+    #     with open(vocab_file, 'wb') as f:
+    #         cPickle.dump(self.words, f)
+    #
+    #     #The same operation like this [self.vocab[word] for word in x_text]
+    #     # index of words as our basic data
+    #     self.tensor = np.array(list(map(self.vocab.get, x_text)))
+    #     # Save the data to data.npy
+    #     np.save(tensor_file, self.tensor)
 
     def load_preprocessed(self, vocab_file, tensor_file):
         with open(vocab_file, 'rb') as f:
