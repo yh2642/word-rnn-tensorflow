@@ -6,7 +6,7 @@ import argparse
 import time
 import os
 from six.moves import cPickle
-
+from sample import *
 from utils import TextLoader
 from model import Model
 
@@ -54,6 +54,13 @@ def main():
     train(args)
 
 def train(args):
+    tag_id_name_dict = dict()
+    tag_name_id_dict = dict()
+    for line in open('/home/icarus/yhu/category_name_dict/data'):
+        cat_id, name = line.split('|')[:2]
+        tag_id_name_dict['category.' + cat_id] = name
+        tag_name_id_dict[name] = 'category.' + cat_id
+
     data_loader = TextLoader(args.data_dir, args.batch_size, args.seq_length, args.input_encoding)
     args.vocab_size = data_loader.vocab_size
 
@@ -123,6 +130,10 @@ def train(args):
                         .format(e * data_loader.num_batches + b,
                                 args.num_epochs * data_loader.num_batches,
                                 e, train_loss, speed))
+                    for user, serials in sample_user.items():
+                        print(user)
+                        args2 = get_sample_args()
+                        print (model.sample(sess, data_loader.words, data_loader.vocab, 5, serials, args2.sample, args2.pick, args2.width, tag_id_name_dict))
                 if (e * data_loader.num_batches + b) % args.save_every == 0 \
                         or (e==args.num_epochs-1 and b == data_loader.num_batches-1): # save for the last result
                     checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
