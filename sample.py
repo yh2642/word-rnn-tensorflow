@@ -29,6 +29,10 @@ def main():
     sample(args)
 
 def sample(args):
+    tag_id_name_dict = dict()
+    for line in open('/home/icarus/yhu/category_name_dict/data'):
+        cat_id, name = line.split('|')[:2]
+        tag_id_name_dict['category.' + cat_id] = name
     with open(os.path.join(args.save_dir, 'config.pkl'), 'rb') as f:
         saved_args = cPickle.load(f)
     with open(os.path.join(args.save_dir, 'words_vocab.pkl'), 'rb') as f:
@@ -40,7 +44,7 @@ def sample(args):
         ckpt = tf.train.get_checkpoint_state(args.save_dir)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
-            print(model.sample(sess, words, vocab, args.n, args.prime, args.sample, args.pick, args.width))
+            print(model.sample(sess, words, vocab, args.n, args.prime, args.sample, args.pick, args.width, tag_id_name_dict))
 
 if __name__ == '__main__':
     main()
