@@ -59,7 +59,8 @@ def sample(args):
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
             for user, serials in sample_user.items():
-                print(model.sample(sess, serials, vocab, args.n, args.prime, args.sample, args.pick, args.width, tag_id_name_dict))
+                print(user)
+                print(model.sample(sess, words, vocab, args.n, serials, args.sample, args.pick, args.width, tag_id_name_dict))
 
 if __name__ == '__main__':
     main()

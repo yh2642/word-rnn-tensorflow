@@ -119,14 +119,13 @@ class Model():
             if not len(prime) or prime == ' ':
                 prime  = random.choice(list(vocab.keys()))
             print (prime)
-            for word in prime.split()[:-1]:
-                print (word)
+            for word in prime.split(' ')[:-1]:
+                print (word), tag_id_name_dict.get(word, word)
                 x = np.zeros((1, 1))
                 x[0, 0] = vocab.get(word,0)
                 feed = {self.input_data: x, self.initial_state:state}
                 [state] = sess.run([self.final_state], feed)
 
-            ret = tag_id_name_dict.get(prime, prime)
             word = prime.split()[-1]
             word = tag_name_id_dict.get(word, word)
             for n in range(num):
