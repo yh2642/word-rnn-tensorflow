@@ -130,15 +130,15 @@ def train(args):
                         .format(e * data_loader.num_batches + b,
                                 args.num_epochs * data_loader.num_batches,
                                 e, train_loss, speed))
-                    for user, serials in sample_user.items():
-                        print(user)
-                        args2 = get_sample_args()
-                        print (model.sample(sess, data_loader.words, data_loader.vocab, 5, serials, args2.sample, args2.pick, args2.width, tag_id_name_dict))
                 if (e * data_loader.num_batches + b) % args.save_every == 0 \
                         or (e==args.num_epochs-1 and b == data_loader.num_batches-1): # save for the last result
                     checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
                     saver.save(sess, checkpoint_path, global_step = e * data_loader.num_batches + b)
                     print("model saved to {}".format(checkpoint_path))
+                    for user, serials in sample_user.items():
+                        print(user)
+                        args2 = get_sample_args()
+                        print (model.sample(sess, data_loader.words, data_loader.vocab, 5, serials, args2.sample, args2.pick, args2.width, tag_id_name_dict))
         train_writer.close()
 
 if __name__ == '__main__':
