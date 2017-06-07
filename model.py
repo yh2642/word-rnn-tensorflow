@@ -126,7 +126,7 @@ class Model():
                 feed = {self.input_data: x, self.initial_state:state}
                 [state] = sess.run([self.final_state], feed)
 
-            ret = prime
+            ret = tag_id_name_dict.get(prime, prime)
             word = prime.split()[-1]
             word = tag_name_id_dict.get(word, word)
             for n in range(num):
