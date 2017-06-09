@@ -73,10 +73,11 @@ class Model():
         output = tf.reshape(tf.concat(outputs, 1), [-1, args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
         self.probs = tf.nn.softmax(self.logits)
-        loss = legacy_seq2seq.sequence_loss_by_example([self.logits],
-                [tf.reshape(self.targets, [-1])],
-                [tf.ones([args.batch_size * args.seq_length])],
-                args.vocab_size)
+        # loss = legacy_seq2seq.sequence_loss_by_example([self.logits],
+        #         [tf.reshape(self.targets, [-1])],
+        #         [tf.ones([args.batch_size * args.seq_length])],
+        #         args.vocab_size)
+        loss = tf.nn.softmax_cross_entropy_with_logits(self.logits, labels=tf.reshape(self.targets, [-1]))
         self.cost = tf.reduce_sum(loss) / args.batch_size / args.seq_length
         tf.summary.scalar("cost", self.cost)
         self.final_state = last_state
