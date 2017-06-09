@@ -70,13 +70,19 @@ class Model():
 
         # outputs, last_state = legacy_seq2seq.rnn_decoder(inputs, self.initial_state, cell, loop_function=loop if infer else None, scope='rnnlm')
         outputs, last_state = legacy_seq2seq.rnn_decoder(inputs, self.initial_state, cell, loop_function=None, scope='rnnlm')
+        print "outputs", outputs
+        print "last_state", last_state
         output = tf.reshape(tf.concat(outputs, 1), [-1, args.rnn_size])
+        print "output", output
         self.logits = tf.matmul(output, softmax_w) + softmax_b
+        print "self.logits", self.logits
         self.probs = tf.nn.softmax(self.logits)
+        print "self.probs", self.probs
         # loss = legacy_seq2seq.sequence_loss_by_example([self.logits],
         #         [tf.reshape(self.targets, [-1])],
         #         [tf.ones([args.batch_size * args.seq_length])],
         #         args.vocab_size)
+        print "tf.reshape(self.targets, [-1])", tf.reshape(self.targets, [-1])
         loss = tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=tf.reshape(self.targets, [-1]))
         self.cost = tf.reduce_sum(loss) / args.batch_size / args.seq_length
         tf.summary.scalar("cost", self.cost)
