@@ -77,7 +77,7 @@ class Model():
         #         [tf.reshape(self.targets, [-1])],
         #         [tf.ones([args.batch_size * args.seq_length])],
         #         args.vocab_size)
-        loss = tf.nn.softmax_cross_entropy_with_logits(self.logits, labels=tf.reshape(self.targets, [-1]))
+        loss = tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=tf.reshape(self.targets, [-1]))
         self.cost = tf.reduce_sum(loss) / args.batch_size / args.seq_length
         tf.summary.scalar("cost", self.cost)
         self.final_state = last_state
