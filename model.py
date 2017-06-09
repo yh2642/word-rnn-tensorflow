@@ -58,7 +58,7 @@ class Model():
             with tf.device("/cpu:0"):
                 # embedding = tf.get_variable("embedding", [args.vocab_size, args.rnn_size])
                 inputs = tf.split(self.input_data, args.batch_size, 0)
-                # inputs = [tf.squeeze(input_, [1]) for input_ in inputs]
+                inputs = [tf.squeeze(input_, [0]) for input_ in inputs]
             #
             # # one batch input with 2 sequence , seq_length is 3 and dim is 3
             # inputs = [[[1, 2, 3], [4, 5, 6], [1, 2, 3]], [[1, 2, 3], [4, 5, 6], [1, 2, 3]]]
