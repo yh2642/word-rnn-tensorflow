@@ -135,6 +135,8 @@ class TextLoader():
         x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
         x = np.array([[[1, 2,3, 5], [4, 4, 5, 7], [5, 6, 7, 1]], [[1, 2,3, 5], [4, 4, 5, 3], [5, 6, 7, 7]], [[1, 2,3, 8], [4, 4, 5, 9], [5, 6, 7, 10]]])
         y = np.array([[[4, 4, 5, 7], [5, 6, 7, 1], [1, 2,3, 5]], [[4, 4, 5, 3], [5, 6, 7, 7],[1, 2,3, 5]], [[4, 4, 5, 9], [5, 6, 7, 10], [1, 2,3, 8]]])
+        x.astype('float32')
+        y.astype('float32')
         self.pointer += 1
         return x, y
 
