@@ -51,9 +51,9 @@ class Model():
                 #tf.summary.histogram('histogram', var)
 
         with tf.variable_scope('rnnlm'):
-            softmax_w = tf.get_variable("softmax_w", [args.rnn_size, args.vocab_size])
+            softmax_w = tf.get_variable("softmax_w", [args.rnn_size, args.sample_dim])
             variable_summaries(softmax_w)
-            softmax_b = tf.get_variable("softmax_b", [args.vocab_size])
+            softmax_b = tf.get_variable("softmax_b", [args.sample_dim])
             variable_summaries(softmax_b)
             with tf.device("/cpu:0"):
                 # embedding = tf.get_variable("embedding", [args.vocab_size, args.rnn_size])
