@@ -29,8 +29,8 @@ class Model():
 
         self.cell = cell = rnn.MultiRNNCell(cells)
 
-        self.input_data = tf.placeholder(tf.int32, [args.batch_size, args.seq_length])
-        self.targets = tf.placeholder(tf.int32, [args.batch_size, args.seq_length])
+        self.input_data = tf.placeholder(tf.int32, [args.batch_size, args.seq_length, args.sample_dim])
+        self.targets = tf.placeholder(tf.int32, [args.batch_size, args.seq_length, args.sample_dim])
         self.initial_state = cell.zero_state(args.batch_size, tf.float32)
         self.batch_pointer = tf.Variable(0, name="batch_pointer", trainable=False, dtype=tf.int32)
         self.inc_batch_pointer_op = tf.assign(self.batch_pointer, self.batch_pointer + 1)
@@ -56,16 +56,20 @@ class Model():
             softmax_b = tf.get_variable("softmax_b", [args.vocab_size])
             variable_summaries(softmax_b)
             with tf.device("/cpu:0"):
-                embedding = tf.get_variable("embedding", [args.vocab_size, args.rnn_size])
-                inputs = tf.split(tf.nn.embedding_lookup(embedding, self.input_data), args.seq_length, 1)
-                inputs = [tf.squeeze(input_, [1]) for input_ in inputs]
+                # embedding = tf.get_variable("embedding", [args.vocab_size, args.rnn_size])
+                inputs = tf.split(self.input_data, args.batch_size, 0)
+                # inputs = [tf.squeeze(input_, [1]) for input_ in inputs]
+            #
+            # # one batch input with 2 sequence , seq_length is 3 and dim is 3
+            # inputs = [[[1, 2, 3], [4, 5, 6], [1, 2, 3]], [[1, 2, 3], [4, 5, 6], [1, 2, 3]]]
 
-        def loop(prev, _):
-            prev = tf.matmul(prev, softmax_w) + softmax_b
-            prev_symbol = tf.stop_gradient(tf.argmax(prev, 1))
-            return tf.nn.embedding_lookup(embedding, prev_symbol)
+        # def loop(prev, _):
+        #     prev = tf.matmul(prev, softmax_w) + softmax_b
+        #     prev_symbol = tf.stop_gradient(tf.argmax(prev, 1))
+        #     return tf.nn.embedding_lookup(embedding, prev_symbol)
 
-        outputs, last_state = legacy_seq2seq.rnn_decoder(inputs, self.initial_state, cell, loop_function=loop if infer else None, scope='rnnlm')
+        # outputs, last_state = legacy_seq2seq.rnn_decoder(inputs, self.initial_state, cell, loop_function=loop if infer else None, scope='rnnlm')
+        outputs, last_state = legacy_seq2seq.rnn_decoder(inputs, self.initial_state, cell, loop_function=None, scope='rnnlm')
         output = tf.reshape(tf.concat(outputs, 1), [-1, args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
         self.probs = tf.nn.softmax(self.logits)
