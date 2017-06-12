@@ -124,7 +124,7 @@ class Model():
                 prime  = random.choice(list(vocab.keys()))
                 print prime
             for word in prime[:-1]:
-                print '-'.join(map(lambda cat_id: tag_id_name_dict.get(cat_id, cat_id), word.keys()))
+                print '-'.join(map(lambda cat_id: unicode(tag_id_name_dict.get(cat_id, cat_id)), word.keys()))
                 x = gen_vec(word)
                 feed = {self.input_data: x, self.initial_state:state}
                 [state] = sess.run([self.final_state], feed)
