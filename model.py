@@ -129,7 +129,7 @@ class Model():
                 print "--------"
                 for w in word.keys():
                     print w.encode('utf-8')
-                x = gen_vec(word)
+                x = gen_vec(word).reshape((1, 1, len(vocab)))
                 feed = {self.input_data: x, self.initial_state:state}
                 [state] = sess.run([self.final_state], feed)
             print state
