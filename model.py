@@ -29,8 +29,8 @@ class Model():
 
         self.cell = cell = rnn.MultiRNNCell(cells)
 
-        self.input_data = tf.placeholder(tf.float32, [args.batch_size, args.seq_length, args.sample_dim])
-        self.targets = tf.placeholder(tf.float32, [args.batch_size, args.seq_length, args.sample_dim])
+        self.input_data = tf.placeholder(tf.float32, [args.batch_size, args.seq_length, args.vocab_size])
+        self.targets = tf.placeholder(tf.float32, [args.batch_size, args.seq_length, args.vocab_size])
         self.initial_state = cell.zero_state(args.batch_size, tf.float32)
         self.batch_pointer = tf.Variable(0, name="batch_pointer", trainable=False, dtype=tf.int32)
         self.inc_batch_pointer_op = tf.assign(self.batch_pointer, self.batch_pointer + 1)
