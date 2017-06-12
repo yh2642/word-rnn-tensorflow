@@ -5,6 +5,7 @@ import collections
 from six.moves import cPickle
 import numpy as np
 import re
+import ujson
 import itertools
 
 class TextLoader():
@@ -53,7 +54,7 @@ class TextLoader():
         Returns vocabulary mapping and inverse vocabulary mapping.
         """
         # Build vocabulary
-        word_counts = collections.Counter(sentences)
+        word_counts = collections.Counter([sent.keys() for sent in sentences])
         # Mapping from index to word
         vocabulary_inv = [x[0] for x in word_counts.most_common()]
         vocabulary_inv = list(sorted(vocabulary_inv))
@@ -67,12 +68,13 @@ class TextLoader():
         for filename in os.listdir(data_dir):
             if filename.endswith(".gz"):
                 for line in gzip.open(data_dir + filename):
-                    item_serial = line.strip().split(' ')
-                    if len(item_serial) < seq_length:
+                    profile_serials = ujson.loads(line.strip())
+                    if len(profile_serials) < seq_length:
                         continue
-                    mul_cut = len(item_serial) / seq_length
-                    item_serial = item_serial[:mul_cut*seq_length]
-                    x_text.extend(item_serial)
+                    mul_cut = len(profile_serials) / seq_length
+                    profile_serials = profile_serials[:mul_cut*seq_length]
+                    x_text.extend(profile_serials)
+                    break
         self.vocab, self.words = self.build_vocab(x_text)
         self.vocab_size = len(self.words)
 
@@ -81,7 +83,13 @@ class TextLoader():
 
         #The same operation like this [self.vocab[word] for word in x_text]
         # index of words as our basic data
-        self.tensor = np.array(list(map(self.vocab.get, x_text)))
+        def gen_vec(profile):
+            vec = np.zeros((1, self.vocab_size))
+            for cat_id, score in profile.items():
+                idx = self.vocab[cat_id]
+                vec[idx] = score
+        self.tensor = np.array(list(map(gen_vec, x_text)))
+        print "tensor shape is: %s" % str(self.tensor.shape)
         # Save the data to data.npy
         np.save(tensor_file, self.tensor)
 
@@ -117,7 +125,7 @@ class TextLoader():
                                                    self.seq_length))
 
     def create_batches(self):
-        self.num_batches = int(self.tensor.size / (self.batch_size *
+        self.num_batches = int(self.tensor.shape[0] / (self.batch_size *
                                                    self.seq_length))
         if self.num_batches==0:
             assert False, "Not enough data. Make seq_length and batch_size small."
@@ -126,15 +134,13 @@ class TextLoader():
         xdata = self.tensor
         ydata = np.copy(self.tensor)
 
-        ydata[:-1] = xdata[1:]
-        ydata[-1] = xdata[0]
-        self.x_batches = np.split(xdata.reshape(self.batch_size, -1), self.num_batches, 1)
-        self.y_batches = np.split(ydata.reshape(self.batch_size, -1), self.num_batches, 1)
+        ydata[:-1] = xdata[1:, ]
+        ydata[-1] = xdata[0, ]
+        self.x_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(xdata, self.num_batches, 0))
+        self.y_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(ydata, self.num_batches, 0))
 
     def next_batch(self):
         x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
-        x = np.array([[[1, 2,3, 5], [4, 4, 5, 7], [5, 6, 7, 1]], [[1, 2,3, 5], [4, 4, 5, 3], [5, 6, 7, 7]], [[1, 2,3, 8], [4, 4, 5, 9], [5, 6, 7, 10]]])
-        y = np.array([[[4, 4, 5, 7], [5, 6, 7, 1], [1, 2,3, 5]], [[4, 4, 5, 3], [5, 6, 7, 7],[1, 2,3, 5]], [[4, 4, 5, 9], [5, 6, 7, 10], [1, 2,3, 8]]])
         x.astype('float32')
         y.astype('float32')
         self.pointer += 1
