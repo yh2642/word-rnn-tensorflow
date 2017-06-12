@@ -65,7 +65,7 @@ class Model():
             return prev
 
         # outputs, last_state = legacy_seq2seq.rnn_decoder(inputs, self.initial_state, cell, loop_function=loop if infer else None, scope='rnnlm')
-        outputs, last_state = legacy_seq2seq.rnn_decoder(inputs, self.initial_state, cell, loop_function=None, scope='rnnlm')
+        outputs, last_state = legacy_seq2seq.rnn_decoder(inputs, self.initial_state, cell, loop_function=None if not infer else loop, scope='rnnlm')
         output = tf.reshape(tf.concat(outputs, 1), [-1, args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
         self.probs = tf.nn.softmax(self.logits)
@@ -110,44 +110,49 @@ class Model():
             samples, scores = bs.search(None, None, k=width, maxsample=num)
             return samples[np.argmin(scores)]
 
+        def gen_vec(profile):
+            vec = np.zeros(len(vocab))
+            for cat_id, score in profile.items():
+                idx = vocab[cat_id]
+                vec[idx] = score
+            return vec
+
         ret = ''
         if pick == 1:
             state = sess.run(self.cell.zero_state(1, tf.float32))
             if not len(prime) or prime == ' ':
                 prime  = random.choice(list(vocab.keys()))
-            print (prime)
-            for word in prime.split(' ')[:-1]:
-                print (word), tag_id_name_dict.get(word, word)
-                x = np.zeros((1, 1))
-                x[0, 0] = vocab.get(word,0)
+                print prime
+            for word in prime[:-1]:
+                print '-'.join(map(lambda cat_id: tag_id_name_dict.get(cat_id, cat_id), word.keys()))
+                x = gen_vec(word)
                 feed = {self.input_data: x, self.initial_state:state}
                 [state] = sess.run([self.final_state], feed)
-
-            word = prime.split()[-1]
-            word = tag_name_id_dict.get(word, word)
-            for n in range(num):
-                x = np.zeros((1, 1))
-                x[0, 0] = vocab.get(word, 0)
-                feed = {self.input_data: x, self.initial_state:state}
-                [probs, state] = sess.run([self.probs, self.final_state], feed)
-                p = probs[0]
-
-                if sampling_type == 0:
-                    sample = np.argmax(p)
-                elif sampling_type == 2:
-                    if word == '\n':
-                        sample = weighted_pick(p)
-                    else:
-                        sample = np.argmax(p)
-                else: # sampling_type == 1 default:
-                    sample = weighted_pick(p)
-                if n==1:
-                    top_interests = np.argsort(-p)[:20]
-                    for idx in top_interests:
-                        print tag_id_name_dict.get(words[idx], words[idx]), p[idx]
-                pred = words[sample]
-                ret += ' ' + tag_id_name_dict.get(pred, pred)
-                word = pred
+            print state
+            #
+            # for n in range(num):
+            #     x = np.zeros((1, 1))
+            #     x[0, 0] = vocab.get(word, 0)
+            #     feed = {self.input_data: x, self.initial_state:state}
+            #     [probs, state] = sess.run([self.probs, self.final_state], feed)
+            #     p = probs[0]
+            #
+            #     if sampling_type == 0:
+            #         sample = np.argmax(p)
+            #     elif sampling_type == 2:
+            #         if word == '\n':
+            #             sample = weighted_pick(p)
+            #         else:
+            #             sample = np.argmax(p)
+            #     else: # sampling_type == 1 default:
+            #         sample = weighted_pick(p)
+            #     if n==1:
+            #         top_interests = np.argsort(-p)[:20]
+            #         for idx in top_interests:
+            #             print tag_id_name_dict.get(words[idx], words[idx]), p[idx]
+            #     pred = words[sample]
+            #     ret += ' ' + tag_id_name_dict.get(pred, pred)
+            #     word = pred
         elif pick == 2:
             pred = beam_search_pick(prime, width)
             for i, label in enumerate(pred):

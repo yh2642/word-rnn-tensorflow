@@ -100,8 +100,7 @@ class TextLoader():
                         continue
                     mul_cut = len(profile_serials) / seq_length
                     profile_serials = profile_serials[:mul_cut*seq_length]
-                    if len(x_text) <= 200000:
-                        x_text.extend(list(map(gen_vec, profile_serials)))
+                    x_text.extend(list(map(gen_vec, profile_serials)))
         #The same operation like this [self.vocab[word] for word in x_text]
         # index of words as our basic data
         self.tensor = np.array(x_text)
