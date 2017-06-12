@@ -74,7 +74,8 @@ class TextLoader():
                         continue
                     mul_cut = len(profile_serials) / seq_length
                     profile_serials = profile_serials[:mul_cut*seq_length]
-                    x_text.extend(profile_serials)
+                    if len(x_text) <= 200000:
+                        x_text.extend(profile_serials)
                     for profile in profile_serials:
                         for word in profile.keys():
                             vocab.add(word)
