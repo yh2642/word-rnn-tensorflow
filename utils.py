@@ -74,7 +74,6 @@ class TextLoader():
                     mul_cut = len(profile_serials) / seq_length
                     profile_serials = profile_serials[:mul_cut*seq_length]
                     x_text.extend(profile_serials)
-                    break
         self.vocab, self.words = self.build_vocab(x_text)
         self.vocab_size = len(self.words)
 
@@ -90,8 +89,6 @@ class TextLoader():
                 vec[idx] = score
             return vec
         self.tensor = np.array(list(map(gen_vec, x_text)))
-        print "tensor shape is: %s" % str(self.tensor.shape)
-        print self.tensor[0]
         # Save the data to data.npy
         np.save(tensor_file, self.tensor)
 
@@ -140,8 +137,6 @@ class TextLoader():
         ydata[-1] = xdata[0, ]
         self.x_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(xdata, self.num_batches, 0))
         self.y_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(ydata, self.num_batches, 0))
-        print "shape of batch x is %s" % str(self.x_batches[0].shape)
-        print self.x_batches[0]
 
     def next_batch(self):
         x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
