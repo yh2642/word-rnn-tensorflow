@@ -74,8 +74,8 @@ class TextLoader():
                         continue
                     mul_cut = len(profile_serials) / seq_length
                     profile_serials = profile_serials[:mul_cut*seq_length]
-                    if len(x_text) <= 200000:
-                        x_text.extend(profile_serials)
+                    # if len(x_text) <= 200000:
+                    #     x_text.extend(list(map(gen_vec, profile_serials)))
                     for profile in profile_serials:
                         for word in profile.keys():
                             vocab.add(word)
@@ -85,15 +85,26 @@ class TextLoader():
         with open(vocab_file, 'wb') as f:
             cPickle.dump(self.words, f)
 
-        #The same operation like this [self.vocab[word] for word in x_text]
-        # index of words as our basic data
         def gen_vec(profile):
             vec = np.zeros(self.vocab_size)
             for cat_id, score in profile.items():
                 idx = self.vocab[cat_id]
                 vec[idx] = score
             return vec
-        self.tensor = np.array(list(map(gen_vec, x_text)))
+
+        for filename in os.listdir(data_dir):
+            if filename.endswith(".gz"):
+                for line in gzip.open(data_dir + filename):
+                    profile_serials = ujson.loads(line.strip())
+                    if len(profile_serials) < seq_length:
+                        continue
+                    mul_cut = len(profile_serials) / seq_length
+                    profile_serials = profile_serials[:mul_cut*seq_length]
+                    if len(x_text) <= 200000:
+                        x_text.extend(list(map(gen_vec, profile_serials)))
+        #The same operation like this [self.vocab[word] for word in x_text]
+        # index of words as our basic data
+        self.tensor = np.array(x_text)
         # Save the data to data.npy
         np.save(tensor_file, self.tensor)
 
