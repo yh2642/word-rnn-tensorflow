@@ -54,7 +54,7 @@ class TextLoader():
         Returns vocabulary mapping and inverse vocabulary mapping.
         """
         # Build vocabulary
-        word_counts = collections.Counter([sent.keys() for sent in sentences])
+        word_counts = collections.Counter(reduce(lambda x, y: x+y, [sent.keys() for sent in sentences]))
         # Mapping from index to word
         vocabulary_inv = [x[0] for x in word_counts.most_common()]
         vocabulary_inv = list(sorted(vocabulary_inv))
