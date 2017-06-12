@@ -128,7 +128,7 @@ class Model():
                 # print '-'.join(map(lambda cat_id: unicode(tag_id_name_dict.get(cat_id, cat_id)), word.keys()))
                 print "--------"
                 for w in word.keys():
-                    print w
+                    print w.encode('utf-8')
                 x = gen_vec(word)
                 feed = {self.input_data: x, self.initial_state:state}
                 [state] = sess.run([self.final_state], feed)
