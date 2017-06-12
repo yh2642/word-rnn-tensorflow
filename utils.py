@@ -88,6 +88,7 @@ class TextLoader():
             for cat_id, score in profile.items():
                 idx = self.vocab[cat_id]
                 vec[idx] = score
+            return vec
         self.tensor = np.array(list(map(gen_vec, x_text)))
         print "tensor shape is: %s" % str(self.tensor.shape)
         print self.tensor[0]
