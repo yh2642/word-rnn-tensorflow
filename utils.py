@@ -74,6 +74,8 @@ class TextLoader():
                     mul_cut = len(profile_serials) / seq_length
                     profile_serials = profile_serials[:mul_cut*seq_length]
                     x_text.extend(profile_serials)
+                    if len(x_text) > 100000:
+                        break
         self.vocab, self.words = self.build_vocab(x_text)
         self.vocab_size = len(self.words)
 
