@@ -48,16 +48,16 @@ class TextLoader():
         string = re.sub(r"\s{2,}", " ", string)
         return string.strip().lower()
 
-    def build_vocab(self, sentences):
+    def build_vocab(self, sentences, vocab):
         """
         Builds a vocabulary mapping from word to index based on the sentences.
         Returns vocabulary mapping and inverse vocabulary mapping.
         """
         # Build vocabulary
-        word_counts = collections.Counter(reduce(lambda x, y: x+y, [sent.keys() for sent in sentences]))
+        # word_counts = collections.Counter(reduce(lambda x, y: x+y, [sent.keys() for sent in sentences]))
         # Mapping from index to word
-        vocabulary_inv = [x[0] for x in word_counts.most_common()]
-        vocabulary_inv = list(sorted(vocabulary_inv))
+        # vocabulary_inv = [x[0] for x in word_counts.most_common()]
+        vocabulary_inv = list(sorted(list(vocab)))
         # Mapping from word to index
         vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
         return [vocabulary, vocabulary_inv]
@@ -65,6 +65,7 @@ class TextLoader():
     def preprocess(self, data_dir, vocab_file, tensor_file, encoding, seq_length):
         import gzip
         x_text = []
+        vocab = set()
         for filename in os.listdir(data_dir):
             if filename.endswith(".gz"):
                 for line in gzip.open(data_dir + filename):
@@ -74,9 +75,10 @@ class TextLoader():
                     mul_cut = len(profile_serials) / seq_length
                     profile_serials = profile_serials[:mul_cut*seq_length]
                     x_text.extend(profile_serials)
-                    if len(x_text) > 100000:
-                        break
-        self.vocab, self.words = self.build_vocab(x_text)
+                    for profile in profile_serials:
+                        for word in profile.keys():
+                            vocab.add(word)
+        self.vocab, self.words = self.build_vocab(x_text, vocab)
         self.vocab_size = len(self.words)
 
         with open(vocab_file, 'wb') as f:
