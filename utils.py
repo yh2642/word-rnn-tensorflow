@@ -84,7 +84,7 @@ class TextLoader():
         #The same operation like this [self.vocab[word] for word in x_text]
         # index of words as our basic data
         def gen_vec(profile):
-            vec = np.zeros((1, self.vocab_size))
+            vec = np.zeros(self.vocab_size)
             for cat_id, score in profile.items():
                 idx = self.vocab[cat_id]
                 vec[idx] = score
