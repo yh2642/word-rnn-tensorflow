@@ -42,7 +42,7 @@ def sample(args):
         words, vocab = cPickle.load(f)
     model = Model(saved_args, True)
 
-    f = open(args.data_dir, 'w')
+    f = open(args.data_dir + 'result', 'w')
     counter = 0
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
