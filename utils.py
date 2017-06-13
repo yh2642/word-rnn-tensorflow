@@ -7,6 +7,7 @@ import numpy as np
 import re
 import ujson
 import itertools
+import gzip
 
 class TextLoader():
     def __init__(self, data_dir, batch_size, seq_length, encoding=None):
@@ -62,23 +63,25 @@ class TextLoader():
         vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
         return [vocabulary, vocabulary_inv]
 
-    def preprocess(self, data_dir, vocab_file, tensor_file, encoding, seq_length):
-        import gzip
-        x_text = []
-        vocab = set()
+    @staticmethod
+    def sample_generator(data_dir):
         for filename in os.listdir(data_dir):
             if filename.endswith(".gz"):
                 for line in gzip.open(data_dir + filename):
-                    profile_serials = ujson.loads(line.strip())
-                    if len(profile_serials) < seq_length:
-                        continue
-                    mul_cut = len(profile_serials) / seq_length
-                    profile_serials = profile_serials[:mul_cut*seq_length]
-                    # if len(x_text) <= 200000:
-                    #     x_text.extend(list(map(gen_vec, profile_serials)))
-                    for profile in profile_serials:
-                        for word in profile.keys():
-                            vocab.add(word)
+                    yield line
+
+    def preprocess(self, data_dir, vocab_file, tensor_file, encoding, seq_length):
+        x_text = []
+        vocab = set()
+        for line in self.sample_generator(data_dir):
+            profile_serials = ujson.loads(line.strip())
+            if len(profile_serials) < seq_length:
+                continue
+            mul_cut = len(profile_serials) / seq_length
+            profile_serials = profile_serials[:mul_cut*seq_length]
+            for profile in profile_serials:
+                for word in profile.keys():
+                    vocab.add(word)
         self.vocab, self.words = self.build_vocab(x_text, vocab)
         self.vocab_size = len(self.words)
 
@@ -92,15 +95,13 @@ class TextLoader():
                 vec[idx] = score
             return vec
 
-        for filename in os.listdir(data_dir):
-            if filename.endswith(".gz"):
-                for line in gzip.open(data_dir + filename):
-                    profile_serials = ujson.loads(line.strip())
-                    if len(profile_serials) < seq_length:
-                        continue
-                    mul_cut = len(profile_serials) / seq_length
-                    profile_serials = profile_serials[:mul_cut*seq_length]
-                    x_text.extend(list(map(gen_vec, profile_serials)))
+        for line in self.sample_generator(data_dir):
+            profile_serials = ujson.loads(line.strip())
+            if len(profile_serials) < seq_length:
+                continue
+            mul_cut = len(profile_serials) / seq_length
+            profile_serials = profile_serials[:mul_cut*seq_length]
+            x_text.extend(list(map(gen_vec, profile_serials)))
         #The same operation like this [self.vocab[word] for word in x_text]
         # index of words as our basic data
         self.tensor = np.array(x_text)
