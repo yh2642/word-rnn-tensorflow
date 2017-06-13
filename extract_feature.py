@@ -56,7 +56,7 @@ def sample(args):
                 profile = json.loads(profile)
                 if len(profile) <= 3:
                     continue
-                user_vec = model.sample(sess, words, vocab, args.n, , args.sample, args.pick, args.width, tag_id_name_dict)
+                user_vec = model.sample(sess, words, vocab, args.n, profile, args.sample, args.pick, args.width, tag_id_name_dict)
                 f.write(user_id + '\t' + json.dumps(user_vec.tolist()) + '\n')
                 counter += 1
                 if counter % 1000 == 0:
