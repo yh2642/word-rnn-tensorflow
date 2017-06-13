@@ -50,6 +50,7 @@ def sample(args):
         ckpt = tf.train.get_checkpoint_state(args.data_dir)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
+            print(args.data_dir)
             for line in TextLoader.sample_generator(args.data_dir):
                 user_id, profile = line.split('\t')
                 user_vec = model.sample(sess, words, vocab, args.n, json.loads(profile), args.sample, args.pick, args.width, tag_id_name_dict)
