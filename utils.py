@@ -188,6 +188,7 @@ class TextLoader():
         # x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
         x, y = self.batch_generator.next()
         x = x.reshape((self.batch_size, self.seq_length, self.vocab_size))
+        y = y.reshape((self.batch_size, self.seq_length, self.vocab_size))
         x.astype('float32')
         y.astype('float32')
         self.pointer += 1
