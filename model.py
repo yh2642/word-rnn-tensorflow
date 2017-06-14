@@ -7,7 +7,7 @@ import numpy as np
 
 from beam import BeamSearch
 
-class Model():
+class Model(object):
     def __init__(self, args, infer=False):
         self.args = args
         if infer:
@@ -70,7 +70,7 @@ class Model():
         output = tf.reshape(tf.concat(outputs, 1), [-1, args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
         self.probs = tf.nn.softmax(self.logits)
-        loss = tf.nn.softmax_cross_entropy_with_logits(logits=self.probs, labels=self.targets)
+        loss = tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.targets)
         self.cost = tf.reduce_sum(loss) / args.batch_size / args.seq_length
         tf.summary.scalar("cost", self.cost)
         self.final_state = last_state

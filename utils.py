@@ -27,7 +27,9 @@ class TextLoader():
             print("loading preprocessed files")
             self.load_preprocessed(vocab_file, tensor_file)
         self.create_batches()
+        self.batch_generator = self.generate_batches()
         self.reset_batch_pointer()
+
 
     def clean_str(self, string):
         """
@@ -71,7 +73,7 @@ class TextLoader():
                     yield line
 
     def preprocess(self, data_dir, vocab_file, tensor_file, encoding, seq_length):
-        x_text = []
+        x_text = 0
         vocab = set()
         for line in self.sample_generator(data_dir):
             profile_serials = ujson.loads(line.strip())
@@ -88,25 +90,18 @@ class TextLoader():
         with open(vocab_file, 'wb') as f:
             cPickle.dump(self.words, f)
 
-        def gen_vec(profile):
-            vec = np.zeros(self.vocab_size)
-            for cat_id, score in profile.items():
-                idx = self.vocab[cat_id]
-                vec[idx] = score
-            return vec
-
         for line in self.sample_generator(data_dir):
             profile_serials = ujson.loads(line.strip())
             if len(profile_serials) < seq_length:
                 continue
             mul_cut = len(profile_serials) / seq_length
             profile_serials = profile_serials[:mul_cut*seq_length]
-            x_text.extend(list(map(gen_vec, profile_serials)))
+            x_text += len(profile_serials)
         #The same operation like this [self.vocab[word] for word in x_text]
         # index of words as our basic data
-        self.tensor = np.array(x_text)
+        self.tensor = x_text
         # Save the data to data.npy
-        np.save(tensor_file, self.tensor)
+        # np.save(tensor_file, self.tensor)
 
 
     #
@@ -140,22 +135,56 @@ class TextLoader():
                                                    self.seq_length))
 
     def create_batches(self):
-        self.num_batches = int(self.tensor.shape[0] / (self.batch_size *
-                                                   self.seq_length))
+        self.num_batches = int(self.tensor / (self.batch_size *
+                                              (self.seq_length + 1)))
         if self.num_batches==0:
             assert False, "Not enough data. Make seq_length and batch_size small."
 
-        self.tensor = self.tensor[:self.num_batches * self.batch_size * self.seq_length]
-        xdata = self.tensor
-        ydata = np.copy(self.tensor)
+        self.tensor = self.num_batches * self.batch_size * (self.seq_length+1)
+        # xdata = self.tensor
+        # ydata = np.copy(self.tensor)
+        #
+        # ydata[:-1] = xdata[1:, ]
+        # ydata[-1] = xdata[0, ]
+        # self.x_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(xdata, self.num_batches, 0))
+        # self.y_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(ydata, self.num_batches, 0))
+    #
+    # def create_batches(self):
+    #     self.num_batches = int(self.tensor.shape[0] / (self.batch_size *
+    #                                                self.seq_length))
+    #     if self.num_batches==0:
+    #         assert False, "Not enough data. Make seq_length and batch_size small."
+    #
+    #     self.tensor = self.tensor[:self.num_batches * self.batch_size * self.seq_length]
+    #     xdata = self.tensor
+    #     ydata = np.copy(self.tensor)
+    #
+    #     ydata[:-1] = xdata[1:, ]
+    #     ydata[-1] = xdata[0, ]
+    #     self.x_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(xdata, self.num_batches, 0))
+    #     self.y_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(ydata, self.num_batches, 0))
 
-        ydata[:-1] = xdata[1:, ]
-        ydata[-1] = xdata[0, ]
-        self.x_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(xdata, self.num_batches, 0))
-        self.y_batches = map(lambda x: x.reshape(self.batch_size, self.seq_length, -1), np.split(ydata, self.num_batches, 0))
+    def generate_batches(self):
+        def gen_vec(profile):
+            vec = np.zeros(self.vocab_size)
+            for cat_id, score in profile.items():
+                idx = self.vocab[cat_id]
+                vec[idx] = score
+            return vec
+        for line in self.sample_generator(self.data_dir):
+            profile_serials = ujson.loads(line.strip())
+            if len(profile_serials) != self.seq_length + 1:
+                continue
+            xdata = np.array(list(map(gen_vec, profile_serials)))
+            ydata = np.copy(xdata)
+
+            ydata[:-1] = xdata[1:, ]
+            ydata[-1] = xdata[0, ]
+            yield xdata[:-1], ydata[:-1]
 
     def next_batch(self):
-        x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
+        # x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
+        x, y = self.batch_generator.next()
         x.astype('float32')
         y.astype('float32')
         self.pointer += 1
