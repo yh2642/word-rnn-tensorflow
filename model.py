@@ -30,8 +30,8 @@ class Model(object):
 
         self.cell = cell = rnn.MultiRNNCell(cells)
 
-        self.input_data = tf.placeholder(tf.float32, [args.seq_length, args.batch_size, args.vocab_size])
-        self.targets = tf.placeholder(tf.float32, [args.seq_length, args.batch_size, args.vocab_size])
+        self.input_data = tf.placeholder(tf.float32, [args.batch_size, args.seq_length, args.vocab_size])
+        self.targets = tf.placeholder(tf.float32, [args.batch_size, args.seq_length, args.vocab_size])
         self.initial_state = cell.zero_state(args.batch_size, tf.float32)
         self.batch_pointer = tf.Variable(0, name="batch_pointer", trainable=False, dtype=tf.int32)
         self.inc_batch_pointer_op = tf.assign(self.batch_pointer, self.batch_pointer + 1)
@@ -57,7 +57,7 @@ class Model(object):
             softmax_b = tf.get_variable("softmax_b", [args.sample_dim])
             variable_summaries(softmax_b)
             with tf.device("/cpu:0"):
-                inputs = tf.split(self.input_data, args.seq_length, 0)
+                inputs = tf.split(self.input_data, args.batch_size, 0)
                 inputs = [tf.squeeze(input_, [0]) for input_ in inputs]
 
         def loop(prev, _):
