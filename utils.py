@@ -180,7 +180,7 @@ class TextLoader():
             batch_x.append(xdata[:-1])
             batch_y.append(ydata[:-1])
             if len(batch_x) == self.batch_size and len(batch_y) == self.batch_size:
-                yield batch_x, batch_y
+                yield np.array(batch_x), np.array(batch_y)
                 batch_x = []
                 batch_y = []
 
