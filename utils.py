@@ -85,8 +85,6 @@ class TextLoader():
                 for word in profile.keys():
                     vocab.add(word)
             x_text += len(profile_serials)
-            if x_text > 100000:
-                break
         self.vocab, self.words = self.build_vocab(x_text, vocab)
         self.vocab_size = len(self.words)
 
