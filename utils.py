@@ -84,19 +84,12 @@ class TextLoader():
             for profile in profile_serials:
                 for word in profile.keys():
                     vocab.add(word)
+            x_text += len(profile_serials)
         self.vocab, self.words = self.build_vocab(x_text, vocab)
         self.vocab_size = len(self.words)
 
         with open(vocab_file, 'wb') as f:
             cPickle.dump(self.words, f)
-
-        for line in self.sample_generator(data_dir):
-            profile_serials = ujson.loads(line.strip())
-            if len(profile_serials) < seq_length:
-                continue
-            mul_cut = len(profile_serials) / seq_length
-            profile_serials = profile_serials[:mul_cut*seq_length]
-            x_text += len(profile_serials)
         #The same operation like this [self.vocab[word] for word in x_text]
         # index of words as our basic data
         self.tensor = x_text
