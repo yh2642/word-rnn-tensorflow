@@ -57,7 +57,7 @@ class Model(object):
             softmax_b = tf.get_variable("softmax_b", [args.sample_dim])
             variable_summaries(softmax_b)
             with tf.device("/cpu:0"):
-                inputs = tf.split(self.input_data, args.batch_size, 0)
+                inputs = tf.split(self.input_data, args.seq_length, 0)
                 inputs = [tf.squeeze(input_, [0]) for input_ in inputs]
 
         def loop(prev, _):

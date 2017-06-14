@@ -85,6 +85,8 @@ class TextLoader():
                 for word in profile.keys():
                     vocab.add(word)
             x_text += len(profile_serials)
+            if x_text > 100000:
+                break
         self.vocab, self.words = self.build_vocab(x_text, vocab)
         self.vocab_size = len(self.words)
 
@@ -164,6 +166,8 @@ class TextLoader():
                 idx = self.vocab[cat_id]
                 vec[idx] = score
             return vec
+        batch_x = []
+        batch_y = []
         for line in self.sample_generator(self.data_dir):
             profile_serials = ujson.loads(line.strip())
             if len(profile_serials) != self.seq_length + 1:
@@ -173,7 +177,12 @@ class TextLoader():
 
             ydata[:-1] = xdata[1:, ]
             ydata[-1] = xdata[0, ]
-            yield xdata[:-1], ydata[:-1]
+            batch_x.append(xdata[:-1])
+            batch_y.append(ydata[:-1])
+            if len(batch_x) == self.batch_size and len(batch_y) == self.batch_size:
+                yield batch_x, batch_y
+                batch_x = []
+                batch_y = []
 
     def next_batch(self):
         # x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
