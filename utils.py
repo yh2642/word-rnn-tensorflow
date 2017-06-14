@@ -163,7 +163,9 @@ class TextLoader():
         def gen_vec(profile):
             vec = np.zeros(self.vocab_size)
             for cat_id, score in profile.items():
-                idx = self.vocab[cat_id]
+                idx = self.vocab.get(cat_id)
+                if idx is None:
+                    continue
                 vec[idx] = score
             return vec
         batch_x = []
