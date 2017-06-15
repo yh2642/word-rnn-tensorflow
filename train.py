@@ -1,4 +1,8 @@
+"""
+python train.py --data_dir=/home/icarus/yhu/data/ --num_layers=2 --batch_size=400 --seq_length=11 --learning_rate=0.002 --gpu_mem=99 --rnn_size=256
+"""
 from __future__ import print_function
+
 import numpy as np
 import tensorflow as tf
 
@@ -120,6 +124,7 @@ def train(args):
             for b in range(data_loader.pointer, data_loader.num_batches):
                 start = time.time()
                 x, y = data_loader.next_batch()
+                state = sess.run(model.initial_state)
                 feed = {model.input_data: x, model.targets: y, model.initial_state: state,
                         model.batch_time: speed}
                 summary, train_loss, state, _, _ = sess.run([merged, model.cost, model.final_state,

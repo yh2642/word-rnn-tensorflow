@@ -30,6 +30,7 @@ class Model(object):
 
         self.cell = cell = rnn.MultiRNNCell(cells)
 
+
         self.input_data = tf.placeholder(tf.float32, [args.batch_size, args.seq_length, args.vocab_size])
         self.targets = tf.placeholder(tf.float32, [args.batch_size, args.seq_length, args.vocab_size])
         self.initial_state = cell.zero_state(args.seq_length, tf.float32)
